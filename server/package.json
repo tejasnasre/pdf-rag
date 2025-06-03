@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --watch index.js",
-    "dev:worker": "node --watch worker.js"
+    "dev:worker": "node --watch worker.js",
+    "start": "node index.js",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down"
   },
   "keywords": [],
   "author": "",

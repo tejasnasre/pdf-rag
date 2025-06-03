@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+.env*
+!.env.example
+uploads/*
+!uploads/.gitkeep
+.DS_Store
+*.md
+docker-compose*.yml
