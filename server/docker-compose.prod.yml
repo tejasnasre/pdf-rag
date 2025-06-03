@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      args:
+        - NODE_ENV=production
+    environment:
+      - NODE_ENV=production
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    command: node startup.js
+
+networks:
+  default:
+    name: pdf-rag-network-prod

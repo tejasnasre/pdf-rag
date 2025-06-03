@@ -3,8 +3,60 @@ services:
     image: valkey/valkey
     ports:
       - 6379:6379
+    volumes:
+      - valkey-data:/data
+    networks:
+      - pdf-rag-network
+    restart: unless-stopped
 
   qdrant:
     image: qdrant/qdrant
     ports:
       - 6333:6333
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - pdf-rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
+    image: pdf-rag-server
+    container_name: pdf-rag-server
+    ports:
+      - 8080:8080
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_HOST=valkey
+      - REDIS_PORT=6379
+      - NODE_ENV=${NODE_ENV:-development}
+    volumes:
+      - ./uploads:/app/uploads
+      - ${NODE_ENV:-development}_node_modules:/app/node_modules
+    depends_on:
+      - valkey
+      - qdrant
+    networks:
+      - pdf-rag-network
+    env_file:
+      - .env
+    restart: unless-stopped
+
+networks:
+  pdf-rag-network:
+    driver: bridge
+
+volumes:
+  qdrant-data:
+  valkey-data:
+  development_node_modules:
+  production_node_modules:

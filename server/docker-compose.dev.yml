@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      args:
+        - NODE_ENV=development
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: npm run dev
+
+networks:
+  default:
+    name: pdf-rag-network-dev

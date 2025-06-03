@@ -23,8 +23,8 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 const queue = new Queue("file-upload-queue", {
-  host: "localhost",
-  port: 6379,
+  host: process.env.REDIS_HOST || "localhost",
+  port: parseInt(process.env.REDIS_PORT || "6379"),
 });
 
 const storage = multer.diskStorage({
@@ -118,6 +118,36 @@ app.post("/upload/pdf", upload.single("pdf"), async function (req, res, next) {
   });
 });
 
-app.listen(8080, () => {
-  console.log("server started on port 8080");
+const PORT = process.env.PORT || 8080;
+const server = app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
+
+// Handle process events for clean shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+  
+  // Force close after 10s
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+  
+  // Force close after 10s
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
 });

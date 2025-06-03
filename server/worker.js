@@ -51,7 +51,7 @@ const worker = new Worker(
       embeddings,
       {
         url: process.env.QDRANT_URL,
-        collectionName: "pdf-rag",
+        collectionName: process.env.QDRANT_COLLECTION_NAME || "pdf-rag",
       }
     );
 
@@ -60,8 +60,29 @@ const worker = new Worker(
   {
     concurrency: 100,
     connection: {
-      host: "localhost",
-      port: 6379,
+      host: process.env.REDIS_HOST || "localhost",
+      port: parseInt(process.env.REDIS_PORT || "6379"),
     },
   }
 );
+
+console.log("Worker started and listening for jobs on file-upload-queue");
+
+// Handle process events for clean shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing worker...');
+  await worker.close();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, closing worker...');
+  await worker.close();
+  process.exit(0);
+});
+
+process.on('uncaughtException', async (err) => {
+  console.error('Uncaught exception:', err);
+  await worker.close();
+  process.exit(1);
+});
